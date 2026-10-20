@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#1e2a3d" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="机电一体化技术学习平台" />
+<title>广州造船厂技工学校机电一体化技术学习平台</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" type="image/png" href="icons/favicon-32.png" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="app">
+  <!-- 侧边栏 -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-logo">⚙️</div>
+      <div class="brand-text">
+        <h1>广州造船厂技工学校</h1>
+        <p>机电一体化技术学习平台</p>
+      </div>
+    </div>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="搜索知识、章节、关键词…" />
+    </div>
+    <nav class="nav" id="moduleNav"></nav>
+    <div class="sidebar-footer">
+      <button class="btn-reset" id="exportBtn" title="导出学习进度到文件/文本">导出进度</button>
+      <button class="btn-reset" id="importBtn" title="从文件/文本导入学习进度">导入进度</button>
+      <button class="btn-reset" id="resetBtn" title="清除学习进度">重置学习进度</button>
+    </div>
+  </aside>
+
+  <!-- 主内容 -->
+  <main class="main">
+    <header class="topbar">
+      <button class="btn-menu" id="menuBtn" title="切换菜单">☰</button>
+      <div class="breadcrumb" id="breadcrumb">首页</div>
+      <div class="topbar-progress">
+        <span id="progressText">0%</span>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+    </header>
+
+    <section class="content" id="content">
+      <!-- 动态渲染 -->
+    </section>
+  </main>
+</div>
+
+<script src="content.js"></script>
+<script src="app.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>

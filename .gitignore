@@ -1,0 +1,10 @@
+# IDE
+.vscode/
+
+# 系统文件
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Trae 内部分享包
+.trae-html-share-packages/
