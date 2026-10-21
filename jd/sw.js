@@ -1,5 +1,5 @@
 // 机电一体化技术学习平台 - Service Worker（离线缓存）
-const CACHE = "mechatronics-v1";
+const CACHE = "mechatronics-v2";
 const ASSETS = [
   "./",
   "./index.html",

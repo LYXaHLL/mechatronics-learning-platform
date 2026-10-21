@@ -1,5 +1,5 @@
 // 电工上岗证培训平台 - Service Worker（离线缓存）
-const CACHE = "electrician-v1";
+const CACHE = "electrician-v2";
 const ASSETS = [
   "./",
   "./index.html",
