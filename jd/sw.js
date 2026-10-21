@@ -1,11 +1,11 @@
-// 机电一体化学习平台 - Service Worker（离线缓存）
+// 机电一体化技术学习平台 - Service Worker（离线缓存）
 const CACHE = "mechatronics-v1";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
-  "./content.js",
+  "./questions.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
