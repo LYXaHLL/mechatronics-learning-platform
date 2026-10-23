@@ -3,7 +3,9 @@
   "use strict";
 
   const BANK = window.QUESTION_BANK || [];
+  const MATERIALS = window.STUDY_MATERIALS || [];
   const LS_KEY = "dg_state_v2";
+  function materialOf(catId) { return MATERIALS.find(m => m.catId === catId) || null; }
 
   // 全局题目索引：qid -> { c: 分类, q: 题目 }
   const INDEX = {};
@@ -87,7 +89,8 @@
     document.getElementById("app").innerHTML = "";
     const fns = {
       home: renderHome, category: renderCategory, study: renderStudy,
-      practice: renderPractice, exam: renderExam, wrong: renderWrong, fav: renderFav, stats: renderStats
+      practice: renderPractice, exam: renderExam, wrong: renderWrong, fav: renderFav, stats: renderStats,
+      material: renderMaterial, materialRead: renderMaterialRead
     };
     (fns[view.name] || renderHome)();
   }
@@ -148,6 +151,7 @@
         <div class="mode-card" data-mode="study"><div class="m-ico">📖</div><h3>学习模式</h3><p>逐题看答案与解析</p></div>
         <div class="mode-card" data-mode="practice"><div class="m-ico">✏️</div><h3>刷题模式</h3><p>顺序/随机，即时判分</p></div>
         <div class="mode-card" data-mode="exam"><div class="m-ico">📝</div><h3>模拟考试</h3><p>限时抽题，自动评分</p></div>
+        ${materialOf(cat.id) ? `<div class="mode-card" data-mode="material"><div class="m-ico">📚</div><h3>学习资料</h3><p>按科目分类，图文阅读</p></div>` : ""}
       </div>
       <h2 class="sec-title">题目列表（${s.total}）</h2>
       <div class="qlist">${cat.questions.map((q, i) => `
@@ -157,9 +161,74 @@
       const m = el.dataset.mode;
       if (m === "study") go("study", { id: cat.id });
       else if (m === "practice") go("practice", { id: cat.id });
+      else if (m === "material") go("material", { id: cat.id });
       else go("exam", { id: cat.id });
     }));
     app.querySelectorAll(".qrow").forEach(el => el.addEventListener("click", () => go("study", { id: cat.id, singleId: el.dataset.id })));
+  }
+
+  // ---------- 学习资料（科目列表） ----------
+  function matBlock(b) {
+    switch (b.t) {
+      case "h": return `<h5 class="mat-h">${esc(b.text)}</h5>`;
+      case "p": return `<p class="mat-p">${esc(b.text)}</p>`;
+      case "li": return `<div class="mat-li">${esc(b.text)}</div>`;
+      case "ol": return `<ol class="mat-ol">${b.items.map(i => `<li>${esc(i)}</li>`).join("")}</ol>`;
+      case "qa": return `<div class="mat-qa"><div class="mat-q">✏️ ${esc(b.q)}</div><div class="mat-a">答：${esc(b.a)}</div></div>`;
+      case "note": return `<div class="mat-note">⚠️ ${esc(b.text)}</div>`;
+      case "tr": return `<div class="mat-tr"><span class="mat-k">${esc(b.k)}</span><span class="mat-v">${esc(b.v)}</span></div>`;
+      default: return "";
+    }
+  }
+  function renderMaterial() {
+    const cat = BANK.find(c => c.id === view.id);
+    const mat = materialOf(view.id);
+    if (!cat || !mat) { go("home"); return; }
+    const total = mat.chapters.reduce((n, ch) => n + ch.sections.length, 0);
+    const app = document.getElementById("app");
+    app.innerHTML = `
+      <div class="cat-head"><div class="cat-ico big">📚</div>
+        <div><h1>${esc(mat.title)}</h1><p class="muted">${esc(mat.version)} · 按科目分类阅读</p><p class="muted small">${mat.chapters.length} 个科目 · ${total} 个知识点</p></div></div>
+      <div class="qlist">${mat.chapters.map((ch, i) => `
+        <div class="qrow mat-chap" data-id="${ch.id}">
+          <span class="qtype" style="background:${["#2563eb", "#7c3aed", "#dc2626", "#16a34a", "#0891b2"][i % 5]}">科${"一二三四五六"[i] || i + 1}</span>
+          <span class="qtxt"><b>${esc(ch.title)}</b><br><span class="small muted">${esc(ch.meta)} · ${ch.sections.length} 个知识点</span></span>
+          <span class="badge">${ch.sections.length} 节</span></div>`).join("")}</div>`;
+    app.querySelectorAll(".mat-chap").forEach(el => el.addEventListener("click", () => go("materialRead", { id: cat.id, ch: el.dataset.id })));
+  }
+
+  // ---------- 学习资料（章节内容阅读） ----------
+  function renderMaterialRead() {
+    const cat = BANK.find(c => c.id === view.id);
+    const mat = materialOf(view.id);
+    if (!cat || !mat) { go("home"); return; }
+    let ci = mat.chapters.findIndex(ch => ch.id === view.ch);
+    if (ci < 0) ci = 0;
+    const ch = mat.chapters[ci];
+    const app = document.getElementById("app");
+    app.innerHTML = `
+      <div class="mat-head">
+        <div class="mat-head-top"><span class="qtype" style="background:${["#2563eb", "#7c3aed", "#dc2626", "#16a34a", "#0891b2"][ci % 5]}">科目${"一二三四五六"[ci] || ci + 1}</span>
+          <h1>${esc(ch.title)}</h1></div>
+        <p class="muted small">${esc(ch.meta)} · 共 ${ch.sections.length} 个知识点</p>
+      </div>
+      <div class="mat-nav">${ch.sections.map((s, i) => `<span class="mat-chip" data-i="${i}">${i + 1}. ${esc(s.title)}</span>`).join("")}</div>
+      ${ch.sections.map((s, i) => `
+        <div class="mat-sec" id="sec-${i}">
+          <div class="mat-sec-title">${i + 1}. ${esc(s.title)}</div>
+          <div class="mat-body">${s.blocks.map(matBlock).join("")}</div>
+        </div>`).join("")}
+      <div class="btn-row">
+        <button class="btn ghost" id="chPrev" ${ci === 0 ? "disabled" : ""}>‹ 上一科目</button>
+        <button class="btn ghost" id="chBack">科目列表</button>
+        <button class="btn primary" id="chNext" ${ci === mat.chapters.length - 1 ? "disabled" : ""}>下一科目 ›</button>
+      </div>`;
+    app.querySelectorAll(".mat-chip").forEach(el => el.addEventListener("click", () => {
+      document.getElementById("sec-" + el.dataset.i).scrollIntoView({ behavior: "smooth" });
+    }));
+    app.querySelector("#chPrev").addEventListener("click", () => go("materialRead", { id: cat.id, ch: mat.chapters[ci - 1].id }));
+    app.querySelector("#chBack").addEventListener("click", () => go("material", { id: cat.id }));
+    app.querySelector("#chNext").addEventListener("click", () => go("materialRead", { id: cat.id, ch: mat.chapters[ci + 1].id }));
   }
 
   // ---------- 学习模式 ----------

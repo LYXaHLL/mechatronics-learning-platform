@@ -1,11 +1,12 @@
 // 电工上岗证培训平台 - Service Worker（离线缓存）
-const CACHE = "electrician-v2";
+const CACHE = "electrician-v3";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
   "./questions.js",
+  "./materials.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
