@@ -10,6 +10,38 @@
     { id: "motor", name: "电动机控制", icon: "⚙️", desc: "点动 · 自锁 · 正反转 · 星三角 · 双速" }
   ];
 
+  // 元器件实物图（离线版通过 window.COMP_IMAGES 内嵌 base64 覆盖）
+  const COMP_IMAGES = window.COMP_IMAGES || {
+    switch: "icons/components/switch.jpg",
+    switch3: "icons/components/switch3.jpg",
+    button: "icons/components/button.jpg",
+    lamp: "icons/components/lamp.jpg",
+    motor: "icons/components/motor.jpg",
+    buzzer: "icons/components/buzzer.jpg",
+    resistor: "icons/components/resistor.jpg",
+    fuse: "icons/components/fuse.jpg",
+    inductor: "icons/components/inductor.jpg",
+    contactor: "icons/components/contactor.jpg",
+    timer: "icons/components/timer.jpg",
+    meter: "icons/components/meter.jpg"
+  };
+
+  // 元器件图鉴数据
+  const GALLERY = [
+    { img: "switch", name: "单联开关", sym: "开关 S", desc: "最常用的照明控制开关，串联在火线上，用于接通或断开一路负载。", use: "单开关控灯、两灯分别控制等" },
+    { img: "switch3", name: "双联开关（单刀双掷）", sym: "双联开关 K", desc: "有公共端和两个切换端，可在两地控制同一盏灯（如楼梯上下）。", use: "两地控制一盏灯、星三角延时切换" },
+    { img: "button", name: "按钮开关", sym: "按钮 SB", desc: "按下接通、松开断开（常开）或反之，用于控制回路的启动与停止。", use: "点动、自锁、正反转、双速等控制回路" },
+    { img: "lamp", name: "白炽灯泡", sym: "灯泡 EL", desc: "电流通过灯丝发热发光，是最基础的照明负载。", use: "各类照明电路" },
+    { img: "motor", name: "三相异步电动机", sym: "电动机 M", desc: "工业生产中最常用的动力设备，通电后转子旋转输出机械能。", use: "点动、自锁、正反转、星三角、双速等" },
+    { img: "buzzer", name: "蜂鸣器", sym: "蜂鸣器 HA", desc: "通电后发出声音的报警/提示器件，常用作门铃或报警。", use: "门铃电路、报警电路" },
+    { img: "resistor", name: "电阻器", sym: "电阻 R", desc: "阻碍电流通过，用于限流、分压、降压。", use: "调光限流、小阻值熔断器等" },
+    { img: "fuse", name: "熔断器", sym: "熔断器 FU", desc: "线路电流过大时熔体熔断切断电源，起短路/过载保护作用。", use: "照明、动力线路的保护" },
+    { img: "inductor", name: "电感镇流器", sym: "镇流器 Z", desc: "利用电感限流，配合启辉器点亮荧光灯（日光灯）。", use: "日光灯电路" },
+    { img: "contactor", name: "交流接触器", sym: "线圈 KM + 触点", desc: "电磁线圈通电吸合，带动主触点/辅助触点动作，实现弱电控制强电。", use: "电动机控制回路的核心元件" },
+    { img: "timer", name: "时间继电器", sym: "时间继电器 KT", desc: "线圈通电后经设定延时，其延时触点才动作，用于自动时序控制。", use: "星三角降压启动的延时切换等" },
+    { img: "meter", name: "单相电度表", sym: "电度表 kWh", desc: "计量负载消耗的电能（用电量），接法为「1、3 进，2、4 出」。", use: "单相电能计量" }
+  ];
+
   // ================= 元件规格 =================
   // terminals: 端子（相对锚点偏移）；loads: 内部负载（电阻Ω）；shorts: 内部直连
   const SPECS = {
@@ -271,7 +303,7 @@
     const bb = document.getElementById("btnBack");
     if (bb) bb.addEventListener("click", () => go("home"));
     document.getElementById("app").innerHTML = "";
-    const fns = { home: renderHome, category: renderCategory, workspace: renderWorkspace, sandbox: renderSandbox };
+    const fns = { home: renderHome, category: renderCategory, workspace: renderWorkspace, sandbox: renderSandbox, gallery: renderGallery };
     (fns[view.name] || renderHome)();
   }
 
@@ -290,9 +322,11 @@
           <div class="cat-arrow">›</div></div>`;
       }).join("")}
       <div class="cat-row" data-go="sandbox"><div class="cat-ico">🧪</div>
-        <div><div class="cat-name">自由搭建</div><div class="cat-meta">从元件库自由组合电路</div></div><div class="cat-arrow">›</div></div></div>`;
+        <div><div class="cat-name">自由搭建</div><div class="cat-meta">从元件库自由组合电路</div></div><div class="cat-arrow">›</div></div>
+      <div class="cat-row" data-go="gallery"><div class="cat-ico">📖</div>
+        <div><div class="cat-name">元器件图鉴</div><div class="cat-meta">对照实物认识常用电器元件</div></div><div class="cat-arrow">›</div></div></div>`;
     app.querySelectorAll(".cat-row[data-id]").forEach(el => el.addEventListener("click", () => go("category", { cat: el.dataset.id })));
-    app.querySelector('.cat-row[data-go="sandbox"]').addEventListener("click", () => go("sandbox"));
+    app.querySelectorAll('.cat-row[data-go]').forEach(el => el.addEventListener("click", () => go(el.dataset.go)));
   }
 
   // ================= 分类列表 =================
@@ -309,6 +343,23 @@
           <div class="circ-info"><div class="circ-name">${esc(c.name)}</div><div class="circ-desc">${esc(c.desc)}</div></div>
           <div class="circ-arrow">›</div></div>`).join("")}</div>`;
     app.querySelectorAll(".circ-card").forEach(el => el.addEventListener("click", () => { session = newSession(CIRCUITS.find(c => c.id === el.dataset.id)); go("workspace"); }));
+  }
+
+  // ================= 元器件图鉴 =================
+  function renderGallery() {
+    const app = document.getElementById("app");
+    app.innerHTML = `
+      <div class="workspace-head"><h1>元器件图鉴</h1><div class="meta">对照实物，认识常用低压电器元件</div></div>
+      <div class="gallery-grid">${GALLERY.map(g => `
+        <div class="gallery-card">
+          <div class="gallery-img"><img src="${COMP_IMAGES[g.img]}" alt="${esc(g.name)}" loading="lazy"/></div>
+          <div class="gallery-body">
+            <div class="gallery-name">${esc(g.name)}</div>
+            <div class="gallery-sym">符号：${esc(g.sym)}</div>
+            <div class="gallery-desc">${esc(g.desc)}</div>
+            <div class="gallery-use">用途：${esc(g.use)}</div>
+          </div>
+        </div>`).join("")}</div>`;
   }
 
   // ================= 工作区 =================

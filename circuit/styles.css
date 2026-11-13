@@ -145,3 +145,14 @@ svg.canvas .comp[data-comp] { cursor: pointer; }
 .empty { text-align: center; padding: 50px 20px; }
 .empty .e-ico { font-size: 56px; margin-bottom: 10px; }
 .empty p { color: var(--muted); margin-bottom: 16px; }
+
+/* ===== 元器件图鉴 ===== */
+.gallery-grid { display: flex; flex-direction: column; gap: 12px; }
+.gallery-card { display: flex; gap: 14px; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px; }
+.gallery-img { flex-shrink: 0; width: 92px; height: 92px; border-radius: 12px; overflow: hidden; background: #f7f9fc; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; }
+.gallery-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gallery-body { flex: 1; min-width: 0; }
+.gallery-name { font-size: 16px; font-weight: 700; }
+.gallery-sym { font-size: 12px; color: var(--primary); font-weight: 600; margin-top: 2px; }
+.gallery-desc { font-size: 13px; line-height: 1.65; color: #3b4351; margin-top: 4px; }
+.gallery-use { font-size: 12px; color: var(--muted); margin-top: 4px; }
