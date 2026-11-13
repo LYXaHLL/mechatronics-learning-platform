@@ -121,6 +121,19 @@ svg.canvas { display: block; width: 100%; height: auto; touch-action: none; }
 
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 svg.canvas .spin { transform-origin: 0 0; animation: spin 0.8s linear infinite; }
+
+/* 电流流动动画 */
+@keyframes dash { to { stroke-dashoffset: -18; } }
+svg.canvas .flow { stroke-dasharray: 4 14; animation: dash .55s linear infinite; pointer-events: none; }
+
+/* 灯泡发光脉动 */
+@keyframes pulse { 0%,100% { opacity:.45; transform: scale(1);} 50% { opacity:.95; transform: scale(1.12);} }
+svg.canvas .lamp-glow { transform-box: fill-box; transform-origin: center; animation: pulse 1.2s ease-in-out infinite; }
+
+/* 蜂鸣器声波振动 */
+@keyframes buzz { 0%,100% { opacity:.5; transform: translateX(0);} 50% { opacity:1; transform: translateX(2px);} }
+svg.canvas .buzz { transform-box: fill-box; animation: buzz .28s ease-in-out infinite; }
+
 svg.canvas .term { cursor: pointer; }
 svg.canvas .wire { cursor: pointer; }
 svg.canvas .comp[data-comp] { cursor: pointer; }

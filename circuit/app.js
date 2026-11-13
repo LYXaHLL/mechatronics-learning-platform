@@ -43,22 +43,31 @@
                   <text x="0" y="42" text-anchor="middle" font-size="11" font-weight="600" fill="#1a2433">${c.label || c.id}</text>`;
               } },
     lamp:   { label: "灯泡", terminals: [{ name: "a", dx: -44, dy: 0 }, { name: "b", dx: 44, dy: 0 }], loads: () => [{ from: "a", to: "b", r: 220 }],
-              draw: (c, s, lit) => {
-                return `${lit ? `<circle cx="0" cy="0" r="22" fill="url(#glow)"/>` : ``}<circle cx="0" cy="0" r="15" fill="${lit ? "#fde68a" : "#ffffff"}" stroke="#334155" stroke-width="2.5"/>
-                  <path d="M-8 -8 L8 8 M8 -8 L-8 8" stroke="#334155" stroke-width="2"/>
-                  <text x="0" y="30" text-anchor="middle" font-size="11" font-weight="600" fill="#1a2433">${c.label || c.id}</text>`;
+              draw: (c, s, ls) => {
+                const on = !!ls && ls.on, b = on ? (ls.bright || 0) : 0;
+                const rays = on ? [0, 45, 90, 135, 180, 225, 270, 315].map(a => {
+                  const r = a * Math.PI / 180, cx = Math.cos(r), cy = Math.sin(r);
+                  return `<line x1="${cx * 19}" y1="${cy * 19}" x2="${cx * 26}" y2="${cy * 26}" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>`;
+                }).join("") : "";
+                const glow = on ? `<circle class="lamp-glow" cx="0" cy="0" r="24" fill="url(#glow)" opacity="${0.4 + b * 0.6}"/>` : "";
+                const fill = on ? `rgba(253,230,138,${0.5 + b * 0.5})` : "#ffffff";
+                return `${glow}<circle cx="0" cy="0" r="15" fill="${fill}" stroke="#334155" stroke-width="2.5"/>
+                  <path d="M-8 -8 L8 8 M8 -8 L-8 8" stroke="#334155" stroke-width="2"/>${rays}
+                  <text x="0" y="34" text-anchor="middle" font-size="11" font-weight="600" fill="#1a2433">${c.label || c.id}</text>`;
               } },
     motor:  { label: "电动机", terminals: [{ name: "a", dx: -44, dy: 0 }, { name: "b", dx: 44, dy: 0 }], loads: () => [{ from: "a", to: "b", r: 110 }],
-              draw: (c, s, on) => {
+              draw: (c, s, ls) => {
+                const on = !!ls && ls.on;
                 return `<circle cx="0" cy="0" r="16" fill="${on ? "#bae6fd" : "#ffffff"}" stroke="#334155" stroke-width="2.5"/><text x="0" y="6" text-anchor="middle" font-size="14" font-weight="800" fill="#1a2433">M</text>
                   ${on ? `<path class="spin" d="M0 -16 A16 16 0 0 1 16 0" fill="none" stroke="#dc2626" stroke-width="3" stroke-linecap="round"/>` : ``}
                   <text x="0" y="32" text-anchor="middle" font-size="11" font-weight="600" fill="#1a2433">${c.label || c.id}</text>`;
               } },
     buzzer: { label: "蜂鸣器", terminals: [{ name: "a", dx: -40, dy: 0 }, { name: "b", dx: 40, dy: 0 }], loads: () => [{ from: "a", to: "b", r: 2200 }],
-              draw: (c, s, on) => {
+              draw: (c, s, ls) => {
+                const on = !!ls && ls.on;
                 return `<path d="M-14 -6 L8 -6 A10 10 0 0 1 8 6 L-14 6 Z" fill="${on ? "#fde68a" : "#ffffff"}" stroke="#334155" stroke-width="2.5"/>
                   <line x1="8" y1="-14" x2="8" y2="14" stroke="#334155" stroke-width="2.5"/>
-                  ${on ? `<path d="M16 -10 Q22 -14 16 -18 M22 -4 Q28 -8 22 -12 M16 10 Q22 14 16 18" fill="none" stroke="#f59e0b" stroke-width="2"/>` : ``}
+                  ${on ? `<g class="buzz"><path d="M16 -10 Q22 -14 16 -18 M22 -4 Q28 -8 22 -12 M16 10 Q22 14 16 18" fill="none" stroke="#f59e0b" stroke-width="2"/></g>` : ``}
                   <text x="0" y="30" text-anchor="middle" font-size="11" font-weight="600" fill="#1a2433">${c.label || c.id}</text>`;
               } },
     resistor:{ label: "电阻", terminals: [{ name: "a", dx: -44, dy: 0 }, { name: "b", dx: 44, dy: 0 }], loads: c => [{ from: "a", to: "b", r: c.r || 220 }],
@@ -68,9 +77,12 @@
               draw: (c) => `<path d="M-44 0 A8 8 0 0 1 -28 0 A8 8 0 0 1 -12 0 A8 8 0 0 1 4 0 A8 8 0 0 1 20 0 A8 8 0 0 1 44 0" fill="none" stroke="#334155" stroke-width="2.5"/>
                 <text x="0" y="24" text-anchor="middle" font-size="11" font-weight="600" fill="#1a2433">${c.label || c.id}</text>` },
     coil:   { label: "接触器线圈", terminals: [{ name: "a", dx: -40, dy: 0 }, { name: "b", dx: 40, dy: 0 }], loads: () => [{ from: "a", to: "b", r: 2200 }],
-              draw: (c, s, on) => `<rect x="-17" y="-15" width="34" height="30" rx="4" fill="${on ? "#fde68a" : "#ffffff"}" stroke="#334155" stroke-width="2.5"/>
+              draw: (c, s, ls) => {
+                const on = !!ls && ls.on;
+                return `<rect x="-17" y="-15" width="34" height="30" rx="4" fill="${on ? "#fde68a" : "#ffffff"}" stroke="#334155" stroke-width="2.5"/>
                 <text x="0" y="5" text-anchor="middle" font-size="11" font-weight="800" fill="#1a2433">${c.label || c.id}</text>
-                <text x="0" y="32" text-anchor="middle" font-size="10" fill="#6b7688">线圈</text>` },
+                <text x="0" y="32" text-anchor="middle" font-size="10" fill="#6b7688">线圈</text>`;
+              } },
     contact:{ label: "触点", terminals: [{ name: "a", dx: -38, dy: 0 }, { name: "b", dx: 38, dy: 0 }],
               draw: (c, s) => {
                 const closed = s === true; // s 为 contactStates 的布尔
@@ -343,20 +355,22 @@
       }).join("");
     }
     // 用户导线
+    const anyOn = powered && Object.values(sol.loadStates || {}).some(l => l.on);
     const userWires = session.wires.map((w, i) => {
       const p1 = termWorld(circuit.components.find(c => c.id === w[0].split(".")[0]), w[0].split(".")[1]);
       const p2 = termWorld(circuit.components.find(c => c.id === w[1].split(".")[0]), w[1].split(".")[1]);
       const v = sol ? (sol.voltages[w[0]] || 0) : 0;
       const col = wireColor(v, powered);
-      return `<polyline class="wire" data-i="${i}" points="${polyPath(routePath(p1, p2))}" fill="none" stroke="${col}" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+      const pts = polyPath(routePath(p1, p2));
+      const flow = (anyOn && v > V0 * 0.05) ? `<polyline class="flow" points="${pts}" fill="none" stroke="${col}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>` : "";
+      return `<polyline class="wire" data-i="${i}" points="${pts}" fill="none" stroke="${col}" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>${flow}`;
     }).join("");
     // 元件
     const comps = circuit.components.map(c => {
       const spec = SPECS[c.type];
       const st = c.type === "contact" ? (sol && sol.contactStates ? sol.contactStates[c.id] : (c.kind === "NC")) : session.switchStates[c.id];
       const ls = sol ? sol.loadStates[c.id] : null;
-      const lit = !!ls && ls.on;
-      const body = spec.draw(c, st, lit);
+      const body = spec.draw(c, st, ls);
       return `<g class="comp" data-comp="${c.id}" transform="translate(${c.x},${c.y}) rotate(${c.rot || 0})">${body}</g>`;
     }).join("");
     // 端子
