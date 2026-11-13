@@ -1,0 +1,17 @@
+{
+  "name": "广州造船厂技工学校电工线路连接模拟器",
+  "short_name": "电路模拟器",
+  "description": "电工线路连接仿真：照明电路、实用电路、电动机控制电路自由接线与点亮",
+  "lang": "zh-CN",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f2f5fa",
+  "theme_color": "#16243d",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
