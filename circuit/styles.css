@@ -130,6 +130,10 @@ svg.canvas .flow { stroke-dasharray: 4 14; animation: dash .55s linear infinite;
 @keyframes pulse { 0%,100% { opacity:.45; transform: scale(1);} 50% { opacity:.95; transform: scale(1.12);} }
 svg.canvas .lamp-glow { transform-box: fill-box; transform-origin: center; animation: pulse 1.2s ease-in-out infinite; }
 
+/* 灯泡光芒呼吸 */
+@keyframes rayPulse { 0%,100% { transform: scale(1);} 50% { transform: scale(1.12);} }
+svg.canvas .lamp-rays { transform-box: fill-box; transform-origin: center; animation: rayPulse 1.4s ease-in-out infinite; }
+
 /* 蜂鸣器声波振动 */
 @keyframes buzz { 0%,100% { opacity:.5; transform: translateX(0);} 50% { opacity:1; transform: translateX(2px);} }
 svg.canvas .buzz { transform-box: fill-box; animation: buzz .28s ease-in-out infinite; }

@@ -45,22 +45,31 @@
     lamp:   { label: "灯泡", terminals: [{ name: "a", dx: -44, dy: 0 }, { name: "b", dx: 44, dy: 0 }], loads: () => [{ from: "a", to: "b", r: 220 }],
               draw: (c, s, ls) => {
                 const on = !!ls && ls.on, b = on ? (ls.bright || 0) : 0;
-                const rays = on ? [0, 45, 90, 135, 180, 225, 270, 315].map(a => {
+                const glow = on ? `<circle class="lamp-glow" cx="0" cy="-4" r="26" fill="url(#glow)" opacity="${0.4 + b * 0.6}"/>` : "";
+                const fill = on ? `rgba(253,230,138,${0.55 + b * 0.45})` : "#ffffff";
+                const rays = on ? `<g class="lamp-rays" opacity="${0.55 + b * 0.45}">${[0, 45, 90, 135, 180, 225, 270, 315].map(a => {
                   const r = a * Math.PI / 180, cx = Math.cos(r), cy = Math.sin(r);
-                  return `<line x1="${cx * 19}" y1="${cy * 19}" x2="${cx * 26}" y2="${cy * 26}" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>`;
-                }).join("") : "";
-                const glow = on ? `<circle class="lamp-glow" cx="0" cy="0" r="24" fill="url(#glow)" opacity="${0.4 + b * 0.6}"/>` : "";
-                const fill = on ? `rgba(253,230,138,${0.5 + b * 0.5})` : "#ffffff";
-                return `${glow}<circle cx="0" cy="0" r="15" fill="${fill}" stroke="#334155" stroke-width="2.5"/>
-                  <path d="M-8 -8 L8 8 M8 -8 L-8 8" stroke="#334155" stroke-width="2"/>${rays}
-                  <text x="0" y="34" text-anchor="middle" font-size="11" font-weight="600" fill="#1a2433">${c.label || c.id}</text>`;
+                  return `<line x1="${cx * 21}" y1="${cy * 21 - 4}" x2="${cx * 28}" y2="${cy * 28 - 4}" stroke="#f59e0b" stroke-width="2.2" stroke-linecap="round"/>`;
+                }).join("")}</g>` : "";
+                return `${glow}${rays}
+                  <circle cx="0" cy="-4" r="16" fill="${fill}" stroke="#334155" stroke-width="2.5"/>
+                  <path d="M-7 -11 L7 3 M7 -11 L-7 3" stroke="#334155" stroke-width="2"/>
+                  <rect x="-5" y="9" width="10" height="6" rx="1.5" fill="#94a3b8" stroke="#334155" stroke-width="1.5"/>
+                  <line x1="-5" y1="12" x2="5" y2="12" stroke="#334155" stroke-width="1"/>
+                  <line x1="-5" y1="14" x2="5" y2="14" stroke="#334155" stroke-width="1"/>
+                  <text x="0" y="30" text-anchor="middle" font-size="11" font-weight="600" fill="#1a2433">${c.label || c.id}</text>`;
               } },
     motor:  { label: "电动机", terminals: [{ name: "a", dx: -44, dy: 0 }, { name: "b", dx: 44, dy: 0 }], loads: () => [{ from: "a", to: "b", r: 110 }],
               draw: (c, s, ls) => {
                 const on = !!ls && ls.on;
-                return `<circle cx="0" cy="0" r="16" fill="${on ? "#bae6fd" : "#ffffff"}" stroke="#334155" stroke-width="2.5"/><text x="0" y="6" text-anchor="middle" font-size="14" font-weight="800" fill="#1a2433">M</text>
-                  ${on ? `<path class="spin" d="M0 -16 A16 16 0 0 1 16 0" fill="none" stroke="#dc2626" stroke-width="3" stroke-linecap="round"/>` : ``}
-                  <text x="0" y="32" text-anchor="middle" font-size="11" font-weight="600" fill="#1a2433">${c.label || c.id}</text>`;
+                const rc = on ? "#dc2626" : "#cbd5e1";
+                return `<circle cx="0" cy="0" r="17" fill="${on ? "#dbeafe" : "#ffffff"}" stroke="#334155" stroke-width="2.5"/>
+                  <g class="${on ? "spin" : ""}">
+                    <rect x="-2" y="-13" width="4" height="26" rx="2" fill="${rc}"/>
+                    <rect x="-13" y="-2" width="26" height="4" rx="2" fill="${rc}"/>
+                  </g>
+                  <circle cx="0" cy="0" r="3.5" fill="#334155"/>
+                  <text x="0" y="33" text-anchor="middle" font-size="11" font-weight="600" fill="#1a2433">${c.label || c.id}</text>`;
               } },
     buzzer: { label: "蜂鸣器", terminals: [{ name: "a", dx: -40, dy: 0 }, { name: "b", dx: 40, dy: 0 }], loads: () => [{ from: "a", to: "b", r: 2200 }],
               draw: (c, s, ls) => {
