@@ -350,5 +350,81 @@ window.CIRCUITS = [
       ["L.a", "KM1.a"], ["KM1.b", "M.a"], ["M.b", "N.a"]
     ],
     explain: "两地控制：两个停止按钮 SB1、SB2 串联（任一按下即可断开），两个启动按钮 SB3、SB4 并联（任一按下即可启动）。任一地点都可实现启动与停止，常用于需要在多个位置操作的设备。"
+  },
+
+  {
+    id: "motor5", cat: "motor", name: "星三角降压启动控制", level: 3,
+    desc: "电动机启动时接成星形降压，延时后切换为三角形全压运行",
+    goal: "接线完成后，KT 初始为延时前（星形档）。按下启动按钮 SB2，主接触器 KM1 与星形接触器 KM2 吸合，电动机星形降压启动；将 KT 拨动到另一档（模拟延时到），KM2 释放、KM3 吸合，电动机转为三角形全压运行；按停止按钮 SB1 停机。",
+    points: ["启动时 KM1、KM2 吸合，三相绕组接成星形（Y），每相绕组电压为线电压的 1/√3，实现降压启动", "时间继电器 KT 延时到后其延时触点切换：KM2 释放、KM3 吸合，电动机转为三角形（Δ）运行", "KM2 与 KM3 之间用常闭辅助触点互锁，防止星形、三角形接触器同时吸合", "主回路为教学简化的单相表示，实际电机主回路为三相，Y/Δ 改变的是三相绕组的连接方式"],
+    components: [
+      { id: "L", type: "live", x: 55, y: 100 },
+      { id: "N", type: "neutral", x: 55, y: 470 },
+      { id: "SB1", type: "switch", x: 150, y: 100, state: "closed" },
+      { id: "A", type: "node", x: 150, y: 160 },
+      { id: "SB2", type: "switch", x: 150, y: 220, state: "open" },
+      { id: "KM1s", type: "contact", x: 235, y: 220, ref: "KM1", kind: "NO" },
+      { id: "B", type: "node", x: 235, y: 280 },
+      { id: "KM1", type: "coil", x: 310, y: 280 },
+      { id: "KT", type: "switch3", x: 150, y: 340, state: "up", label: "KT 延时触点" },
+      { id: "KM3i", type: "contact", x: 235, y: 316, ref: "KM3", kind: "NC" },
+      { id: "KM2", type: "coil", x: 310, y: 316 },
+      { id: "KM2i", type: "contact", x: 235, y: 364, ref: "KM2", kind: "NC" },
+      { id: "KM3", type: "coil", x: 310, y: 364 },
+      { id: "KM1m", type: "contact", x: 150, y: 430, ref: "KM1", kind: "NO" },
+      { id: "D", type: "node", x: 230, y: 430 },
+      { id: "KM2m", type: "contact", x: 300, y: 400, ref: "KM2", kind: "NO" },
+      { id: "KM3m", type: "contact", x: 300, y: 460, ref: "KM3", kind: "NO" },
+      { id: "M", type: "motor", x: 340, y: 430 }
+    ],
+    wires: [
+      ["L.a", "SB1.a"], ["SB1.b", "A.a"],
+      ["A.a", "SB2.a"], ["A.a", "KM1s.a"],
+      ["SB2.b", "B.a"], ["KM1s.b", "B.a"],
+      ["B.a", "KM1.a"], ["B.a", "KT.com"],
+      ["KT.l1", "KM3i.a"], ["KM3i.b", "KM2.a"], ["KM2.b", "N.a"],
+      ["KT.l2", "KM2i.a"], ["KM2i.b", "KM3.a"], ["KM3.b", "N.a"],
+      ["L.a", "KM1m.a"], ["KM1m.b", "D.a"],
+      ["D.a", "KM2m.a"], ["D.a", "KM3m.a"],
+      ["KM2m.b", "M.a"], ["KM3m.b", "M.a"], ["M.b", "N.a"]
+    ],
+    explain: "启动按钮 SB2 与自锁触点 KM1s 并联，按下后主接触器 KM1 得电并自锁，同时经时间继电器 KT 的延时触点（本模拟用单刀双掷开关 KT 手动模拟延时到）接通星形接触器 KM2，电动机星形降压启动。模拟延时到后把 KT 拨到另一档：星形支路断开、三角形支路接通，KM2 释放、KM3 吸合，电动机转为三角形全压运行。KM2i、KM3i 两组常闭触点实现星形/三角形互锁。主回路中 KM1m 为电源主触点，KM2m、KM3m 分别对应星形、三角形运行支路。（三相电机主回路实际为三相绕组 Y/Δ 换接，此处为单相教学简化。）"
+  },
+
+  {
+    id: "motor6", cat: "motor", name: "双速电机控制电路", level: 3,
+    desc: "两个接触器切换电机绕组接法，实现低速与高速两档运行",
+    goal: "接线完成后，按低速启动按钮 SB2，低速接触器 KM1 吸合自锁，电动机低速运转；按停止按钮 SB1 停机后，再按高速启动按钮 SB3，高速接触器 KM2 吸合自锁，电动机高速运转。",
+    points: ["低速与高速分别由 KM1、KM2 两个接触器控制，均有自锁触点实现连续运转", "KM1、KM2 之间用常闭辅助触点互锁，防止两个接触器同时吸合造成短路", "双速（变极）电机通过改变绕组极对数实现变速，此处为单相教学简化表示", "切换转速前必须先按停止按钮，不能直接在两档之间切换"],
+    components: [
+      { id: "L", type: "live", x: 55, y: 100 },
+      { id: "N", type: "neutral", x: 55, y: 520 },
+      { id: "KM1m", type: "contact", x: 150, y: 110, ref: "KM1", kind: "NO" },
+      { id: "KM2m", type: "contact", x: 150, y: 170, ref: "KM2", kind: "NO" },
+      { id: "M", type: "motor", x: 290, y: 140 },
+      { id: "SB1", type: "switch", x: 150, y: 230, state: "closed" },
+      { id: "A", type: "node", x: 150, y: 285 },
+      { id: "SB2", type: "switch", x: 150, y: 340, state: "open" },
+      { id: "KM1s", type: "contact", x: 225, y: 340, ref: "KM1", kind: "NO" },
+      { id: "KM2i", type: "contact", x: 225, y: 395, ref: "KM2", kind: "NC" },
+      { id: "KM1", type: "coil", x: 305, y: 395 },
+      { id: "SB3", type: "switch", x: 150, y: 450, state: "open" },
+      { id: "KM2s", type: "contact", x: 225, y: 450, ref: "KM2", kind: "NO" },
+      { id: "KM1i", type: "contact", x: 225, y: 505, ref: "KM1", kind: "NC" },
+      { id: "KM2", type: "coil", x: 305, y: 505 }
+    ],
+    wires: [
+      ["L.a", "SB1.a"], ["SB1.b", "A.a"],
+      ["A.a", "SB2.a"], ["A.a", "KM1s.a"],
+      ["SB2.b", "KM2i.a"], ["KM1s.b", "KM2i.a"],
+      ["KM2i.b", "KM1.a"], ["KM1.b", "N.a"],
+      ["A.a", "SB3.a"], ["A.a", "KM2s.a"],
+      ["SB3.b", "KM1i.a"], ["KM2s.b", "KM1i.a"],
+      ["KM1i.b", "KM2.a"], ["KM2.b", "N.a"],
+      ["L.a", "KM1m.a"], ["KM1m.b", "M.a"],
+      ["L.a", "KM2m.a"], ["KM2m.b", "M.a"],
+      ["M.b", "N.a"]
+    ],
+    explain: "低速支路：停止按钮 SB1 → 启动按钮 SB2（与自锁触点 KM1s 并联）→ 互锁触点 KM2i → 低速接触器线圈 KM1；高速支路：SB1 → 启动按钮 SB3（与自锁触点 KM2s 并联）→ 互锁触点 KM1i → 高速接触器线圈 KM2。KM1、KM2 常闭触点互锁，任一接触器吸合即切断另一支路，防止短路。主触点 KM1m、KM2m 分别接通电动机低速、高速运行。（实际双速电机为变极电机，通过改变三相绕组极对数实现变速，此处为单相教学简化。）"
   }
 ];
