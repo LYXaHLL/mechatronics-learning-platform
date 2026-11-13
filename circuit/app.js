@@ -378,7 +378,7 @@
       const p = termWorld(c, t.name);
       const sel = session.selTerm === key(c.id, t.name);
       return `<circle class="term" data-comp="${c.id}" data-term="${t.name}" cx="${p.x}" cy="${p.y}" r="${sel ? 9 : 7}" fill="${sel ? "#fbbf24" : "#ffffff"}" stroke="${sel ? "#b45309" : "#64748b"}" stroke-width="2.5"/>
-        <circle class="termhit" data-comp="${c.id}" data-term="${t.name}" cx="${p.x}" cy="${p.y}" r="16" fill="transparent"/>`;
+        <circle class="termhit" data-comp="${c.id}" data-term="${t.name}" cx="${p.x}" cy="${p.y}" r="20" fill="transparent"/>`;
     }).join("")).join("");
     return `<svg class="canvas" viewBox="0 0 400 560" xmlns="http://www.w3.org/2000/svg">${defs}${ansWires}${userWires}${comps}${terms}</svg>`;
   }
