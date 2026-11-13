@@ -876,9 +876,50 @@ window.CIRCUITS = [
     return "#f59e0b";
   }
 
+  // 计算每条导线是否载流及电流方向（用于电子流动动画）
+  function flowDirections(circuit, session, sol) {
+    const adj = {};
+    const addEdge = (a, b) => { (adj[a] = adj[a] || []).push(b); (adj[b] = adj[b] || []).push(a); };
+    session.wires.forEach(w => addEdge(w[0], w[1]));
+    circuit.components.forEach(c => {
+      if (c.type === "switch") {
+        if (session.switchStates[c.id] === "closed") addEdge(key(c.id, "a"), key(c.id, "b"));
+      } else if (c.type === "switch3") {
+        const st = session.switchStates[c.id] || "up";
+        addEdge(key(c.id, "com"), st === "up" ? key(c.id, "l1") : key(c.id, "l2"));
+      } else if (c.type === "switch4") {
+        const st = session.switchStates[c.id] || "straight";
+        if (st === "cross") { addEdge(key(c.id, "in1"), key(c.id, "out2")); addEdge(key(c.id, "in2"), key(c.id, "out1")); }
+        else { addEdge(key(c.id, "in1"), key(c.id, "out1")); addEdge(key(c.id, "in2"), key(c.id, "out2")); }
+      } else if (c.type === "contact") {
+        const closed = sol && sol.contactStates ? sol.contactStates[c.id] : (c.kind === "NC");
+        if (closed) addEdge(key(c.id, "a"), key(c.id, "b"));
+      }
+      const spec = SPECS[c.type];
+      if (spec.loads) spec.loads(c).forEach(l => addEdge(key(c.id, l.from), key(c.id, l.to)));
+    });
+    const bfs = (starts) => {
+      const dist = {}, q = starts.slice();
+      starts.forEach(s => dist[s] = 0);
+      while (q.length) {
+        const n = q.shift();
+        (adj[n] || []).forEach(m => { if (dist[m] === undefined) { dist[m] = dist[n] + 1; q.push(m); } });
+      }
+      return dist;
+    };
+    const dL = bfs(["L.a"]), dN = bfs(["N.a"]);
+    const dirs = {};
+    session.wires.forEach(w => {
+      const a = w[0], b = w[1];
+      const flow = dL[a] !== undefined && dL[b] !== undefined && dN[a] !== undefined && dN[b] !== undefined;
+      dirs[a + "|" + b] = { flow, dir: dL[a] > dL[b] ? -1 : 1 };
+    });
+    return dirs;
+  }
+
   function renderSvg(circuit, sol) {
     const powered = !!sol && !sol.short;
-    const defs = `<defs><radialGradient id="glow"><stop offset="0%" stop-color="#fde047"/><stop offset="60%" stop-color="#fde047" stop-opacity="0.5"/><stop offset="100%" stop-color="#fde047" stop-opacity="0"/></radialGradient></defs>`;
+    const defs = `<defs><radialGradient id="glow"><stop offset="0%" stop-color="#fff7cc"/><stop offset="35%" stop-color="#fde047" stop-opacity="0.85"/><stop offset="70%" stop-color="#f59e0b" stop-opacity="0.35"/><stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/></radialGradient></defs>`;
     // 参考答案（虚线）
     let ansWires = "";
     if (session.showAnswer) {
@@ -890,14 +931,21 @@ window.CIRCUITS = [
     }
     // 用户导线
     const anyOn = powered && Object.values(sol.loadStates || {}).some(l => l.on);
+    const flowDirs = flowDirections(circuit, session, sol);
     const userWires = session.wires.map((w, i) => {
       const p1 = termWorld(circuit.components.find(c => c.id === w[0].split(".")[0]), w[0].split(".")[1]);
       const p2 = termWorld(circuit.components.find(c => c.id === w[1].split(".")[0]), w[1].split(".")[1]);
       const v = sol ? (sol.voltages[w[0]] || 0) : 0;
       const col = wireColor(v, powered);
       const pts = polyPath(routePath(p1, p2));
-      const flow = (anyOn && v > V0 * 0.05) ? `<polyline class="flow" points="${pts}" fill="none" stroke="${col}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>` : "";
-      return `<polyline class="wire" data-i="${i}" points="${pts}" fill="none" stroke="${col}" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>${flow}`;
+      const d = flowDirs[w[0] + "|" + w[1]];
+      let dots = "";
+      if (anyOn && d && d.flow && v > V0 * 0.05) {
+        const ordered = d.dir === 1 ? routePath(p1, p2) : routePath(p1, p2).slice().reverse();
+        const mp = "M" + ordered.map(p => `${p.x},${p.y}`).join(" L");
+        dots = [0, 1, 2].map(k => `<g><circle r="5" fill="${col}" opacity="0.3"/><circle r="2.4" fill="#ffffff"/><animateMotion dur="1.15s" begin="${(k * 0.38).toFixed(2)}s" repeatCount="indefinite" path="${mp}"/></g>`).join("");
+      }
+      return `<polyline class="wire" data-i="${i}" points="${pts}" fill="none" stroke="${col}" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>${dots}`;
     }).join("");
     // 元件
     const comps = circuit.components.map(c => {
